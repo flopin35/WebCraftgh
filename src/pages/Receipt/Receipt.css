@@ -1,0 +1,203 @@
+.receipt-page {
+  min-height: 60vh;
+  background-color: var(--color-surface);
+  padding: 2.5rem 0 4rem;
+}
+
+.receipt-card {
+  max-width: 560px;
+  margin: 0 auto;
+  background-color: var(--color-white);
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.75rem;
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.1);
+  text-align: center;
+}
+
+.receipt-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  font-size: 2rem;
+  background-color: #dcfce7;
+  border-radius: 50%;
+  margin-bottom: 1.25rem;
+}
+
+.receipt-card__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #166534;
+  margin-bottom: 0.75rem;
+}
+
+.receipt-card__intro {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  margin-bottom: 1.75rem;
+}
+
+.receipt-card__details {
+  display: grid;
+  gap: 0;
+  text-align: left;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.receipt-card__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.125rem;
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.receipt-card__row:last-child {
+  border-bottom: none;
+}
+
+.receipt-card__row--highlight {
+  background-color: #f0fdf4;
+}
+
+.receipt-card__row dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.receipt-card__row dd {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.receipt-card__row--highlight dd {
+  font-size: 1.25rem;
+  color: #166534;
+  letter-spacing: 0.04em;
+}
+
+.receipt-card__price {
+  color: var(--color-blue) !important;
+  font-size: 1.25rem !important;
+}
+
+.receipt-card__status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #92400e;
+  background-color: #fef3c7;
+  border-radius: 999px;
+}
+
+.receipt-card__message {
+  padding: 1rem 1.125rem;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.receipt-card__message p {
+  font-size: 0.9375rem;
+  color: #166534;
+  line-height: 1.7;
+}
+
+.receipt-card__guarantee {
+  padding: 1.25rem;
+  background-color: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.receipt-card__guarantee h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 0.625rem;
+}
+
+.receipt-card__guarantee p {
+  font-size: 0.9375rem;
+  color: #78350f;
+  line-height: 1.7;
+}
+
+.receipt-card__guarantee-note {
+  margin-top: 0.625rem;
+  font-size: 0.8125rem;
+  color: #92400e;
+}
+
+.receipt-card__contact {
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.receipt-card__contact h2 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.receipt-card__contact ul {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.receipt-card__contact a {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-blue);
+  transition: color var(--transition);
+}
+
+.receipt-card__contact a:hover {
+  color: var(--color-blue-dark);
+}
+
+.receipt-card__home {
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .receipt-page {
+    padding: 3rem 0 5rem;
+  }
+
+  .receipt-card {
+    padding: 2.5rem 2rem;
+  }
+
+  .receipt-card__row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .receipt-card__row dd {
+    text-align: right;
+  }
+}

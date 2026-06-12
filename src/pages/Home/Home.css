@@ -1,0 +1,130 @@
+.home-alert {
+  max-width: 720px;
+  margin: 1rem auto 0;
+  padding: 1rem 1.125rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  color: #991b1b;
+}
+
+.home-alert strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.home-alert p {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.templates {
+  background-color: var(--color-surface);
+}
+
+.templates__grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.custom-card {
+  background: linear-gradient(135deg, var(--color-text) 0%, #1f2937 100%);
+  color: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.custom-card__label {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-blue);
+  background-color: rgba(37, 99, 235, 0.15);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  margin-bottom: 0.75rem;
+}
+
+.custom-card__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.custom-card__description {
+  color: #d1d5db;
+  font-size: 0.9375rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.7;
+}
+
+.custom-card__features li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+  color: #e5e7eb;
+}
+
+.custom-card__features li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--color-blue);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.custom-card__action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.custom-card__price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+@media (min-width: 640px) {
+  .templates__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .templates__grid .template-card:last-child {
+    grid-column: 1 / -1;
+    max-width: 480px;
+    justify-self: center;
+    width: 100%;
+  }
+
+  .custom-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2.5rem;
+  }
+
+  .custom-card__action {
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .templates__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .templates__grid .template-card:last-child {
+    grid-column: auto;
+    max-width: none;
+  }
+}
