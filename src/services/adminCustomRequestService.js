@@ -52,7 +52,11 @@ export function subscribeToCustomRequests(onData, onError) {
     },
     (error) => {
       logError('AdminCustomRequests', error);
-      onError(error);
+      const message =
+        error?.code === 'permission-denied'
+          ? 'Permission denied loading custom requests. Sign in as the authorized admin and run npm run deploy:rules if this persists.'
+          : error;
+      onError(typeof message === 'string' ? new Error(message) : message);
     }
   );
 }

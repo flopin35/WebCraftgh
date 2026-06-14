@@ -7,6 +7,7 @@ import OverviewCards from '../../components/admin/OverviewCards';
 import RequestDetailsPanel from '../../components/admin/RequestDetailsPanel';
 import RequestsTable from '../../components/admin/RequestsTable';
 import Navbar from '../../components/Navbar/Navbar';
+import { auth } from '../../firebase';
 import { logoutAdmin } from '../../services/adminAuthService';
 import {
   subscribeToCustomRequests,
@@ -38,32 +39,58 @@ export default function Admin() {
   const [updateError, setUpdateError] = useState('');
 
   useEffect(() => {
-    setIsLoading(true);
-    setLoadError('');
+    let unsubscribeTemplate = () => {};
+    let unsubscribeCustom = () => {};
+    let cancelled = false;
 
-    const unsubscribeTemplate = subscribeToRequests(
-      (nextRequests) => {
-        setTemplateRequests(nextRequests);
-        setIsLoading(false);
-      },
-      () => {
-        setLoadError('Unable to load template requests.');
-        setIsLoading(false);
-      }
-    );
+    async function startSubscriptions() {
+      setIsLoading(true);
+      setLoadError('');
 
-    const unsubscribeCustom = subscribeToCustomRequests(
-      (nextRequests) => {
-        setCustomRequests(nextRequests);
+      const user = auth?.currentUser;
+      if (!user) {
+        setLoadError('Sign in required to load requests.');
         setIsLoading(false);
-      },
-      () => {
-        setLoadError('Unable to load custom website requests.');
-        setIsLoading(false);
+        return;
       }
-    );
+
+      try {
+        await user.getIdToken();
+      } catch {
+        if (!cancelled) {
+          setLoadError('Unable to verify admin session. Please sign in again.');
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      if (cancelled) return;
+
+      unsubscribeTemplate = subscribeToRequests(
+        (nextRequests) => {
+          setTemplateRequests(nextRequests);
+          setIsLoading(false);
+        },
+        (error) => {
+          setLoadError(error?.message || 'Unable to load template requests.');
+          setIsLoading(false);
+        }
+      );
+
+      unsubscribeCustom = subscribeToCustomRequests(
+        (nextRequests) => {
+          setCustomRequests(nextRequests);
+        },
+        (error) => {
+          setLoadError(error?.message || 'Unable to load custom website requests.');
+        }
+      );
+    }
+
+    startSubscriptions();
 
     return () => {
+      cancelled = true;
       unsubscribeTemplate();
       unsubscribeCustom();
     };

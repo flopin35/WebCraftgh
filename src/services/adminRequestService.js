@@ -10,7 +10,8 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { REQUEST_COLLECTION } from '../constants/requestStatuses';
-import { db } from '../firebase';
+import { auth, db } from '../firebase';
+import { isAuthorizedAdminEmail } from './adminAuthService';
 import { getFriendlyErrorMessage, logError } from '../utils/errors';
 
 export function normalizeTimestamp(value) {
@@ -73,7 +74,11 @@ export function subscribeToRequests(onData, onError) {
     },
     (error) => {
       logError('AdminRequests', error);
-      onError(error);
+      const message =
+        error?.code === 'permission-denied'
+          ? 'Permission denied loading requests. Sign in as the authorized admin and run npm run deploy:rules if this persists.'
+          : error;
+      onError(typeof message === 'string' ? new Error(message) : message);
     }
   );
 }
@@ -119,12 +124,39 @@ export async function testFirestoreConnection() {
     return { success: false, message: 'Firestore is not initialized.' };
   }
 
+  const user = auth?.currentUser;
+
+  if (!user) {
+    return {
+      success: true,
+      message: 'Firestore client ready. Sign in as admin to verify database read access.',
+    };
+  }
+
+  if (!isAuthorizedAdminEmail(user.email)) {
+    return {
+      success: false,
+      message: 'Signed-in account is not authorized for admin Firestore access.',
+    };
+  }
+
   try {
+    await user.getIdToken();
+
     const requestsQuery = query(collection(db, REQUEST_COLLECTION), limit(1));
     await getDocs(requestsQuery);
-    return { success: true, message: 'Firestore connected successfully.' };
+    return { success: true, message: 'Firestore connected and admin read access verified.' };
   } catch (error) {
     logError('FirestoreTest', error);
+
+    if (error?.code === 'permission-denied') {
+      return {
+        success: false,
+        message:
+          'Firestore denied read access. Deploy firestore.rules with npm run deploy:rules and sign in as the authorized admin.',
+      };
+    }
+
     return {
       success: false,
       message: getFriendlyErrorMessage(error, 'Unable to connect to Firestore.'),
