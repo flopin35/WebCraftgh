@@ -1,11 +1,19 @@
+import { FIREBASE_DEFAULTS } from '../config/firebase.defaults';
+
+function readEnv(key) {
+  const value = import.meta.env[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : '';
+}
+
 export function getFirebaseConfig() {
   return {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    apiKey: readEnv('VITE_FIREBASE_API_KEY') || FIREBASE_DEFAULTS.apiKey,
+    authDomain: readEnv('VITE_FIREBASE_AUTH_DOMAIN') || FIREBASE_DEFAULTS.authDomain,
+    projectId: readEnv('VITE_FIREBASE_PROJECT_ID') || FIREBASE_DEFAULTS.projectId,
+    storageBucket: readEnv('VITE_FIREBASE_STORAGE_BUCKET') || FIREBASE_DEFAULTS.storageBucket,
+    messagingSenderId:
+      readEnv('VITE_FIREBASE_MESSAGING_SENDER_ID') || FIREBASE_DEFAULTS.messagingSenderId,
+    appId: readEnv('VITE_FIREBASE_APP_ID') || FIREBASE_DEFAULTS.appId,
   };
 }
 
@@ -31,5 +39,9 @@ export function getFirebaseConfigError() {
   if (!config.projectId) missing.push('VITE_FIREBASE_PROJECT_ID');
   if (!config.appId) missing.push('VITE_FIREBASE_APP_ID');
 
-  return `Firebase is not configured. Missing: ${missing.join(', ')}. Add values to your .env file and restart the dev server.`;
+  const hint = import.meta.env.DEV
+    ? 'Add values to your .env file and restart the dev server.'
+    : 'Add VITE_FIREBASE_* variables in Vercel → Settings → Environment Variables, then redeploy.';
+
+  return `Firebase is not configured. Missing: ${missing.join(', ')}. ${hint}`;
 }
