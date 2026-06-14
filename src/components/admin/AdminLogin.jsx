@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginWithGoogle, redirectAuthorizedAdmin } from '../../services/adminAuthService';
+import { getFirebaseConfigError, isFirebaseConfigured } from '../../firebase';
 import { checkFirebaseAuthReachable } from '../../utils/networkCheck';
 import './admin.css';
 
@@ -65,6 +66,8 @@ export default function AdminLogin({ error: externalError = '', onAuthSuccess })
   };
 
   const displayError = error || externalError;
+  const firebaseReady = isFirebaseConfigured();
+  const firebaseConfigError = getFirebaseConfigError();
 
   return (
     <div className="admin-login">
@@ -76,11 +79,22 @@ export default function AdminLogin({ error: externalError = '', onAuthSuccess })
           account.
         </p>
 
-        {isCheckingNetwork && (
+        {!firebaseReady && (
+          <div className="admin-login__config-error" role="alert">
+            <strong>Firebase is not configured on this deployment</strong>
+            <p>{firebaseConfigError}</p>
+            <p>
+              Add all <code>VITE_FIREBASE_*</code> variables in Vercel → Settings → Environment
+              Variables, then redeploy the site.
+            </p>
+          </div>
+        )}
+
+        {firebaseReady && isCheckingNetwork && (
           <p className="admin-login__hint">Checking connection to Firebase Auth...</p>
         )}
 
-        {networkWarning && (
+        {firebaseReady && networkWarning && (
           <div className="admin-login__network-warning" role="alert">
             <strong>Connection issue detected</strong>
             <p>{networkWarning}</p>
@@ -103,7 +117,7 @@ export default function AdminLogin({ error: externalError = '', onAuthSuccess })
           type="button"
           className="btn btn--primary btn--full admin-login__google"
           onClick={handleGoogleSignIn}
-          disabled={isSigningIn || isCheckingNetwork}
+          disabled={isSigningIn || isCheckingNetwork || !firebaseReady}
         >
           {isSigningIn ? 'Signing in with Google...' : 'Continue with Google'}
         </button>

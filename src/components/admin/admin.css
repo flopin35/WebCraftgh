@@ -560,6 +560,35 @@
   text-align: center;
 }
 
+.admin-login__config-error {
+  margin-bottom: 1rem;
+  padding: 1rem 1.125rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+
+.admin-login__config-error strong {
+  display: block;
+  color: #991b1b;
+  margin-bottom: 0.5rem;
+}
+
+.admin-login__config-error p {
+  font-size: 0.875rem;
+  color: #b91c1c;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.admin-login__config-error code {
+  font-size: 0.8125rem;
+  background-color: rgba(0, 0, 0, 0.06);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
 .admin-login__network-warning {
   margin-bottom: 1rem;
   padding: 1rem 1.125rem;

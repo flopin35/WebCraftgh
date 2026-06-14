@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test:security": "node scripts/security-check.mjs",
     "test:custom": "node scripts/custom-flow-test.mjs",
-    "build:prod": "npm run test:security && npm run build",
+    "build:prod": "npm run test:security && node scripts/verify-build-env.mjs && npm run build",
     "deploy:rules": "firebase deploy --only firestore:rules,storage",
     "deploy": "npm run deploy:rules"
   },

@@ -9,7 +9,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { ADMIN_EMAIL } from '../constants/admin';
-import { auth } from '../firebase';
+import { auth, getFirebaseConfigError } from '../firebase';
 import { getFriendlyErrorMessage, logError } from '../utils/errors';
 
 const ADMIN_RETURN_KEY = 'webcraft_admin_return_path';
@@ -199,12 +199,33 @@ export async function loginWithGoogle() {
   if (!auth) {
     return {
       success: false,
-      error: 'Authentication is not available. Check Firebase configuration.',
+      error: getFirebaseConfigError() || 'Authentication is not available. Check Firebase configuration.',
     };
   }
 
   await ensureAuthPersistence();
   sessionStorage.setItem(ADMIN_RETURN_KEY, ADMIN_DASHBOARD_PATH);
+
+  const tryRedirectSignIn = async () => {
+    await signInWithRedirect(auth, provider);
+    return { success: true, redirecting: true, method: 'redirect' };
+  };
+
+  // Redirect is more reliable on production custom domains (popups often blocked).
+  if (!import.meta.env.DEV) {
+    try {
+      return await tryRedirectSignIn();
+    } catch (redirectError) {
+      logError('AdminAuthRedirectPrimary', redirectError);
+
+      if (redirectError?.code === 'auth/unauthorized-domain') {
+        return {
+          success: false,
+          error: `This domain (${window.location.hostname}) is not authorized. Add it in Firebase Console → Authentication → Settings → Authorized domains.`,
+        };
+      }
+    }
+  }
 
   try {
     logAuth('Starting popup sign-in');
