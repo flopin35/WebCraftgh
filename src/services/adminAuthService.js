@@ -162,19 +162,9 @@ export function subscribeToAdminAuth(onChange) {
 
   (async () => {
     await ensureAuthPersistence();
+    if (cancelled) return;
 
     let redirectError = '';
-
-    try {
-      await waitForAuthRedirect();
-    } catch (error) {
-      redirectError = getFriendlyErrorMessage(
-        error,
-        'Unable to complete sign in. Please try again.'
-      );
-    }
-
-    if (cancelled) return;
 
     unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (cancelled) return;
@@ -187,6 +177,26 @@ export function subscribeToAdminAuth(onChange) {
 
       onChange(buildAuthState(user, redirectError));
     });
+
+    try {
+      await waitForAuthRedirect();
+    } catch (error) {
+      redirectError = getFriendlyErrorMessage(
+        error,
+        'Unable to complete sign in. Please try again.'
+      );
+
+      if (!cancelled && auth.currentUser) {
+        if (!isAuthorizedAdminEmail(auth.currentUser.email)) {
+          await handleUnauthorizedUser(auth.currentUser.email);
+          onChange(buildAuthState(null, 'Unauthorized Access'));
+        } else {
+          onChange(buildAuthState(auth.currentUser, redirectError));
+        }
+      } else if (!cancelled) {
+        onChange(buildAuthState(null, redirectError));
+      }
+    }
   })();
 
   return () => {
@@ -205,27 +215,6 @@ export async function loginWithGoogle() {
 
   await ensureAuthPersistence();
   sessionStorage.setItem(ADMIN_RETURN_KEY, ADMIN_DASHBOARD_PATH);
-
-  const tryRedirectSignIn = async () => {
-    await signInWithRedirect(auth, provider);
-    return { success: true, redirecting: true, method: 'redirect' };
-  };
-
-  // Redirect is more reliable on production custom domains (popups often blocked).
-  if (!import.meta.env.DEV) {
-    try {
-      return await tryRedirectSignIn();
-    } catch (redirectError) {
-      logError('AdminAuthRedirectPrimary', redirectError);
-
-      if (redirectError?.code === 'auth/unauthorized-domain') {
-        return {
-          success: false,
-          error: `This domain (${window.location.hostname}) is not authorized. Add it in Firebase Console → Authentication → Settings → Authorized domains.`,
-        };
-      }
-    }
-  }
 
   try {
     logAuth('Starting popup sign-in');

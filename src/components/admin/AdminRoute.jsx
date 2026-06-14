@@ -3,10 +3,8 @@ import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import AdminLogin from './AdminLogin';
 import {
   mapUserToAuthState,
-  redirectAuthorizedAdmin,
   subscribeToAdminAuth,
   verifyAdminRouteExists,
-  waitForAuthRedirect,
 } from '../../services/adminAuthService';
 import './admin.css';
 
@@ -24,14 +22,6 @@ export default function AdminRoute() {
     verifyAdminRouteExists();
     return subscribeToAdminAuth(setAuthState);
   }, []);
-
-  useEffect(() => {
-    if (authState.loading || !authState.user || !authState.authorized) {
-      return;
-    }
-
-    redirectAuthorizedAdmin(navigate, location.pathname);
-  }, [authState.loading, authState.user, authState.authorized, location.pathname, navigate]);
 
   if (authState.loading) {
     return (
@@ -57,7 +47,9 @@ export default function AdminRoute() {
         error={authState.error}
         onAuthSuccess={(user) => {
           setAuthState(mapUserToAuthState(user));
-          redirectAuthorizedAdmin(navigate, location.pathname);
+          if (!location.pathname.startsWith('/admin')) {
+            navigate('/admin', { replace: true });
+          }
         }}
       />
     );
@@ -66,23 +58,4 @@ export default function AdminRoute() {
   return <Outlet />;
 }
 
-export function AuthRedirectHandler() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    waitForAuthRedirect()
-      .then((result) => {
-        if (!result?.user) {
-          return;
-        }
-
-        redirectAuthorizedAdmin(navigate, location.pathname);
-      })
-      .catch(() => {
-        // Errors are surfaced on the admin login screen.
-      });
-  }, [navigate, location.pathname]);
-
-  return null;
-}
+export { AuthRedirectHandler } from './AuthRedirectHandler';
