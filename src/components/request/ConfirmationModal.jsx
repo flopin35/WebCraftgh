@@ -7,6 +7,14 @@ export default function ConfirmationModal({
   onContinue,
   isSubmitting = false,
   submitError = '',
+  title = '⚠️ Final Confirmation',
+  messages = [
+    'This request will be saved and reviewed by our team.',
+    'Once submitted, the review process cannot be cancelled or paused.',
+    'You will be contacted once your review is complete and your final quotation is ready.',
+  ],
+  continueLabel = 'Continue',
+  submittingLabel = 'Submitting Request...',
 }) {
   const [isConfirmed, setIsConfirmed] = useState(false);
 
@@ -50,15 +58,13 @@ export default function ConfirmationModal({
         onClick={(event) => event.stopPropagation()}
       >
         <h2 id="confirmation-modal-title" className="confirmation-modal__title">
-          ⚠️ Final Confirmation
+          {title.startsWith('⚠️') ? title : `⚠️ ${title}`}
         </h2>
 
         <div className="confirmation-modal__message">
-          <p>This request will be saved and reviewed by our team.</p>
-          <p>Once submitted, the review process cannot be cancelled or paused.</p>
-          <p>
-            You will be contacted once your review is complete and your final quotation is ready.
-          </p>
+          {messages.map((message) => (
+            <p key={message}>{message}</p>
+          ))}
           <p className="confirmation-modal__question">Are you sure you want to continue?</p>
         </div>
 
@@ -93,7 +99,7 @@ export default function ConfirmationModal({
             disabled={!isConfirmed || isSubmitting}
             onClick={onContinue}
           >
-            {isSubmitting ? 'Submitting Request...' : 'Continue'}
+            {isSubmitting ? submittingLabel : continueLabel}
           </button>
         </div>
       </div>

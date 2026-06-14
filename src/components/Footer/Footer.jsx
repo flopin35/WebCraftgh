@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { SITE_DOMAIN, SITE_NAME, SITE_TAGLINE, SITE_URL } from '../../constants/site';
 import './Footer.css';
 
 function LogoIcon() {
@@ -20,13 +22,16 @@ export default function Footer() {
     <footer id="contact" className="footer">
       <div className="container footer__inner">
         <div className="footer__brand">
-          <a href="#" className="logo logo--footer">
+          <Link to="/" className="logo logo--footer">
             <span className="logo__icon" aria-hidden="true">
               <LogoIcon />
             </span>
-            <span className="logo__text">WebCraft GH</span>
+            <span className="logo__text">{SITE_NAME}</span>
+          </Link>
+          <p className="footer__tagline">{SITE_TAGLINE}</p>
+          <a href={SITE_URL} className="footer__domain">
+            {SITE_DOMAIN}
           </a>
-          <p className="footer__tagline">Professional websites built for Ghanaian businesses.</p>
         </div>
         <div className="footer__contact">
           <h3 className="footer__heading">Contact Us</h3>
@@ -73,7 +78,10 @@ export default function Footer() {
       </div>
       <div className="footer__bottom">
         <div className="container">
-          <p>&copy; 2026 WebCraft GH. All rights reserved.</p>
+          <p>
+            &copy; 2026 {SITE_NAME}. All rights reserved. ·{' '}
+            <a href={SITE_URL}>{SITE_DOMAIN}</a>
+          </p>
         </div>
       </div>
     </footer>

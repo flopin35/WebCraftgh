@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { SITE_NAME } from '../../constants/site';
 import './Navbar.css';
 
 function LogoIcon() {
@@ -24,12 +26,12 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <div className="container navbar__inner">
-        <a href="#" className="logo" onClick={closeMenu}>
+        <Link to="/" className="logo" onClick={closeMenu}>
           <span className="logo__icon" aria-hidden="true">
             <LogoIcon />
           </span>
-          <span className="logo__text">WebCraft GH</span>
-        </a>
+          <span className="logo__text">{SITE_NAME}</span>
+        </Link>
 
         <button
           type="button"
@@ -51,9 +53,9 @@ export default function Navbar() {
               </a>
             </li>
             <li>
-              <a href="#custom" className="nav__link" onClick={closeMenu}>
+              <Link to="/custom-request" className="nav__link" onClick={closeMenu}>
                 Custom Website
-              </a>
+              </Link>
             </li>
             <li>
               <a href="#contact" className="nav__link" onClick={closeMenu}>

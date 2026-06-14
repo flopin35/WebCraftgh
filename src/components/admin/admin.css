@@ -525,6 +525,29 @@
   color: var(--color-text-muted);
 }
 
+.admin-tabs {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-tabs__btn {
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-tabs__btn.is-active {
+  border-color: var(--color-blue);
+  background-color: var(--color-blue-light);
+  color: var(--color-blue);
+}
+
 .admin-login__google {
   margin-top: 0.5rem;
 }

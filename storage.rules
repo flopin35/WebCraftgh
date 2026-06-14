@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /customWebsiteRequests/{receiptId}/{fileName} {
+      allow read: if request.auth != null
+        && request.auth.token.email == 'daakukwaku7@gmail.com';
+      allow create: if receiptId.matches('CW-[0-9]{6}')
+        && request.resource.size <= 10 * 1024 * 1024
+        && (
+          request.resource.contentType.matches('image/.*')
+          || request.resource.contentType == 'application/pdf'
+          || request.resource.contentType == 'image/svg+xml'
+          || request.resource.contentType == 'application/octet-stream'
+        );
+      allow update, delete: if false;
+    }
+  }
+}

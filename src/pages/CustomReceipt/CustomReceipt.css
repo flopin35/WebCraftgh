@@ -1,0 +1,114 @@
+.custom-receipt-page {
+  min-height: 60vh;
+  background-color: var(--color-surface);
+  padding: 2.5rem 0 4rem;
+}
+
+.custom-receipt-card {
+  max-width: 560px;
+  margin: 0 auto;
+  background-color: var(--color-white);
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.75rem;
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.1);
+  text-align: center;
+}
+
+.custom-receipt-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  font-size: 2rem;
+  background-color: #dcfce7;
+  border-radius: 50%;
+  margin-bottom: 1.25rem;
+}
+
+.custom-receipt-card__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #166534;
+  margin-bottom: 1.25rem;
+}
+
+.custom-receipt-card__details {
+  display: grid;
+  gap: 0;
+  text-align: left;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.custom-receipt-card__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.125rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.custom-receipt-card__row:last-child {
+  border-bottom: none;
+}
+
+.custom-receipt-card__row--highlight {
+  background-color: #f0fdf4;
+}
+
+.custom-receipt-card__row dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.custom-receipt-card__row dd {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.custom-receipt-card__row--highlight dd {
+  font-size: 1.25rem;
+  color: #166534;
+  letter-spacing: 0.04em;
+}
+
+.custom-receipt-card__message {
+  padding: 1rem 1.125rem;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.custom-receipt-card__message p {
+  font-size: 0.9375rem;
+  color: #166534;
+  line-height: 1.7;
+}
+
+.custom-receipt-card__home {
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .custom-receipt-card__row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .custom-receipt-card__row dd {
+    text-align: right;
+  }
+}

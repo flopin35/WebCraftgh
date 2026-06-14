@@ -87,6 +87,13 @@
   gap: 1rem;
 }
 
+.custom-card__action .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .custom-card__price {
   font-size: 1.5rem;
   font-weight: 700;

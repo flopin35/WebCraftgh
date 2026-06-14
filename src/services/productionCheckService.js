@@ -1,4 +1,5 @@
 import { ADMIN_EMAIL } from '../constants/admin';
+import { SITE_DOMAIN, SITE_URL } from '../constants/site';
 import { app, auth, db, isFirebaseConfigured } from '../firebase';
 import { isAuthorizedAdminEmail } from '../services/adminAuthService';
 import { testFirestoreConnection } from '../services/adminRequestService';
@@ -98,6 +99,21 @@ function checkAdminProtection() {
   };
 }
 
+function checkSiteDomain() {
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const onCustomDomain =
+    hostname === SITE_DOMAIN || hostname === SITE_DOMAIN.replace(/^www\./, '');
+
+  return {
+    id: 'domain',
+    label: 'Custom Domain',
+    success: true,
+    message: onCustomDomain
+      ? `Serving on ${hostname}.`
+      : `Configured for ${SITE_URL}. Add ${SITE_DOMAIN} and webcraftgh.com to Firebase Auth authorized domains if admin sign-in fails.`,
+  };
+}
+
 export async function runProductionChecks() {
   const checks = await Promise.all([
     checkFirebaseConnected(),
@@ -106,6 +122,7 @@ export async function runProductionChecks() {
     Promise.resolve(checkReceiptGeneration()),
     Promise.resolve(checkDashboardReady()),
     Promise.resolve(checkAdminProtection()),
+    Promise.resolve(checkSiteDomain()),
   ]);
 
   const passed = checks.filter((check) => check.success).length;

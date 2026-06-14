@@ -5,7 +5,14 @@ service cloud.firestore {
     match /websiteRequests/{requestId} {
       allow create: if isValidWebsiteRequest();
       allow read: if isAdmin();
-      allow update: if isAdmin() && isAdminUpdateOnly();
+      allow update: if isAdmin() && isWebsiteRequestAdminUpdateOnly();
+      allow delete: if false;
+    }
+
+    match /customWebsiteRequests/{requestId} {
+      allow create: if isValidCustomWebsiteRequest();
+      allow read: if isAdmin();
+      allow update: if isAdmin() && isCustomWebsiteRequestAdminUpdateOnly();
       allow delete: if false;
     }
   }
@@ -74,7 +81,7 @@ function isValidWebsiteRequest() {
     && data.requestProgress == '';
 }
 
-function isAdminUpdateOnly() {
+function isWebsiteRequestAdminUpdateOnly() {
   let incoming = request.resource.data;
   let existing = resource.data;
 
@@ -88,6 +95,68 @@ function isAdminUpdateOnly() {
     && incoming.deployment == existing.deployment
     && incoming.totalPrice == existing.totalPrice
     && incoming.notes == existing.notes
+    && incoming.createdAt == existing.createdAt
+    && incoming.status is string
+    && incoming.adminNotes is string
+    && incoming.adminNotes.size() <= 5000
+    && incoming.requestProgress is string
+    && incoming.requestProgress.size() <= 5000;
+}
+
+function isValidCustomWebsiteRequest() {
+  let data = request.resource.data;
+
+  return data.receiptId is string
+    && data.receiptId.matches('CW-[0-9]{6}')
+    && data.status == 'Pending Review'
+    && data.customer.fullName is string
+    && data.customer.fullName.size() > 0
+    && data.customer.fullName.size() <= 120
+    && data.customer.phone is string
+    && data.customer.phone.size() > 0
+    && data.customer.phone.size() <= 30
+    && data.customer.email is string
+    && data.customer.email.size() > 0
+    && data.customer.email.size() <= 120
+    && data.customer.businessName is string
+    && data.customer.businessName.size() > 0
+    && data.customer.businessName.size() <= 120
+    && data.customer.businessType is string
+    && data.customer.businessType.size() > 0
+    && data.project.websiteName is string
+    && data.project.websiteName.size() > 0
+    && data.project.websiteName.size() <= 120
+    && data.project.websitePurpose is string
+    && data.project.websitePurpose.size() > 0
+    && data.project.websitePurpose.size() <= 200
+    && data.project.description is string
+    && data.project.description.size() > 0
+    && data.project.description.size() <= 5000
+    && data.selectedPages is list
+    && data.selectedPages.size() > 0
+    && data.selectedPages.size() <= 20
+    && data.selectedFeatures is list
+    && data.selectedFeatures.size() <= 20
+    && data.uploadedFiles is list
+    && data.uploadedFiles.size() <= 9
+    && data.uploadWarnings is list
+    && data.estimatedPriceRange == 'GHS 2,000+'
+    && data.adminNotes == ''
+    && data.requestProgress == '';
+}
+
+function isCustomWebsiteRequestAdminUpdateOnly() {
+  let incoming = request.resource.data;
+  let existing = resource.data;
+
+  return incoming.receiptId == existing.receiptId
+    && incoming.customer == existing.customer
+    && incoming.project == existing.project
+    && incoming.selectedPages == existing.selectedPages
+    && incoming.selectedFeatures == existing.selectedFeatures
+    && incoming.uploadedFiles == existing.uploadedFiles
+    && incoming.uploadWarnings == existing.uploadWarnings
+    && incoming.estimatedPriceRange == existing.estimatedPriceRange
     && incoming.createdAt == existing.createdAt
     && incoming.status is string
     && incoming.adminNotes is string

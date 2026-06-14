@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Hero from '../../components/Hero/Hero';
 import TemplateCard from '../../components/TemplateCard/TemplateCard';
@@ -70,9 +70,9 @@ export default function Home() {
               </div>
               <div className="custom-card__action">
                 <p className="custom-card__price">{customWebsite.price}</p>
-                <button type="button" className="btn btn--primary btn--lg">
+                <Link to="/custom-request" className="btn btn--primary btn--lg">
                   Request Custom Website
-                </button>
+                </Link>
               </div>
             </article>
           </div>

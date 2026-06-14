@@ -1,11 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminFilters from '../../components/admin/AdminFilters';
+import CustomRequestDetailsPanel from '../../components/admin/CustomRequestDetailsPanel';
+import CustomRequestsTable from '../../components/admin/CustomRequestsTable';
 import OverviewCards from '../../components/admin/OverviewCards';
 import RequestDetailsPanel from '../../components/admin/RequestDetailsPanel';
 import RequestsTable from '../../components/admin/RequestsTable';
 import Navbar from '../../components/Navbar/Navbar';
 import { logoutAdmin } from '../../services/adminAuthService';
+import {
+  subscribeToCustomRequests,
+  updateCustomRequestAdminFields,
+} from '../../services/adminCustomRequestService';
 import {
   subscribeToRequests,
   updateRequestAdminFields,
@@ -21,7 +27,9 @@ const initialFilters = {
 };
 
 export default function Admin() {
-  const [requests, setRequests] = useState([]);
+  const [activeTab, setActiveTab] = useState('template');
+  const [templateRequests, setTemplateRequests] = useState([]);
+  const [customRequests, setCustomRequests] = useState([]);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [filters, setFilters] = useState(initialFilters);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,44 +41,72 @@ export default function Admin() {
     setIsLoading(true);
     setLoadError('');
 
-    const unsubscribe = subscribeToRequests(
+    const unsubscribeTemplate = subscribeToRequests(
       (nextRequests) => {
-        setRequests(nextRequests);
+        setTemplateRequests(nextRequests);
         setIsLoading(false);
-        setLoadError('');
       },
       () => {
-        setLoadError('Unable to load requests. Please refresh and try again.');
+        setLoadError('Unable to load template requests.');
         setIsLoading(false);
       }
     );
 
-    return unsubscribe;
+    const unsubscribeCustom = subscribeToCustomRequests(
+      (nextRequests) => {
+        setCustomRequests(nextRequests);
+        setIsLoading(false);
+      },
+      () => {
+        setLoadError('Unable to load custom website requests.');
+        setIsLoading(false);
+      }
+    );
+
+    return () => {
+      unsubscribeTemplate();
+      unsubscribeCustom();
+    };
   }, []);
 
+  const requests = activeTab === 'template' ? templateRequests : customRequests;
+
   const filteredRequests = useMemo(
-    () => filterRequests(requests, filters),
-    [requests, filters]
+    () => (activeTab === 'template' ? filterRequests(templateRequests, filters) : customRequests),
+    [activeTab, templateRequests, customRequests, filters]
   );
 
-  const overviewCounts = useMemo(() => getOverviewCounts(requests), [requests]);
+  const overviewCounts = useMemo(
+    () => getOverviewCounts(activeTab === 'template' ? templateRequests : customRequests),
+    [activeTab, templateRequests, customRequests]
+  );
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) ?? null,
     [requests, selectedRequestId]
   );
 
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSelectedRequestId(null);
+    setUpdateError('');
+  };
+
   const handleLogout = async () => {
     await logoutAdmin();
     setSelectedRequestId(null);
-    setRequests([]);
+    setTemplateRequests([]);
+    setCustomRequests([]);
   };
 
   const handleAdminUpdate = async (requestId, fields) => {
     setIsUpdating(true);
     setUpdateError('');
 
-    const result = await updateRequestAdminFields(requestId, fields);
+    const result =
+      activeTab === 'template'
+        ? await updateRequestAdminFields(requestId, fields)
+        : await updateCustomRequestAdminFields(requestId, fields);
 
     if (!result.success) {
       setUpdateError(result.error);
@@ -90,7 +126,7 @@ export default function Admin() {
               <p className="admin-page__label">Admin Dashboard</p>
               <h1>Website Request Management</h1>
               <p className="admin-page__subtitle">
-                Monitor submissions in real time, review details, and update request status.
+                Monitor template and custom website submissions in real time.
               </p>
             </div>
             <div className="admin-page__actions">
@@ -106,6 +142,23 @@ export default function Admin() {
             </div>
           </header>
 
+          <div className="admin-tabs">
+            <button
+              type="button"
+              className={`admin-tabs__btn${activeTab === 'template' ? ' is-active' : ''}`}
+              onClick={() => handleTabChange('template')}
+            >
+              Template Requests ({templateRequests.length})
+            </button>
+            <button
+              type="button"
+              className={`admin-tabs__btn${activeTab === 'custom' ? ' is-active' : ''}`}
+              onClick={() => handleTabChange('custom')}
+            >
+              Custom Requests ({customRequests.length})
+            </button>
+          </div>
+
           {loadError && (
             <p className="admin-page__error" role="alert">
               {loadError}
@@ -113,23 +166,42 @@ export default function Admin() {
           )}
 
           <OverviewCards counts={overviewCounts} isLoading={isLoading} />
-          <AdminFilters filters={filters} onChange={setFilters} />
+          {activeTab === 'template' && <AdminFilters filters={filters} onChange={setFilters} />}
 
           <div className="admin-page__content">
-            <RequestsTable
-              requests={filteredRequests}
-              selectedId={selectedRequest?.id}
-              onSelect={(request) => setSelectedRequestId(request.id)}
-              isLoading={isLoading}
-            />
+            {activeTab === 'template' ? (
+              <RequestsTable
+                requests={filteredRequests}
+                selectedId={selectedRequest?.id}
+                onSelect={(request) => setSelectedRequestId(request.id)}
+                isLoading={isLoading}
+              />
+            ) : (
+              <CustomRequestsTable
+                requests={filteredRequests}
+                selectedId={selectedRequest?.id}
+                onSelect={(request) => setSelectedRequestId(request.id)}
+                isLoading={isLoading}
+              />
+            )}
 
-            <RequestDetailsPanel
-              request={selectedRequest}
-              onClose={() => setSelectedRequestId(null)}
-              onAdminUpdate={handleAdminUpdate}
-              isUpdating={isUpdating}
-              updateError={updateError}
-            />
+            {activeTab === 'template' ? (
+              <RequestDetailsPanel
+                request={selectedRequest}
+                onClose={() => setSelectedRequestId(null)}
+                onAdminUpdate={handleAdminUpdate}
+                isUpdating={isUpdating}
+                updateError={updateError}
+              />
+            ) : (
+              <CustomRequestDetailsPanel
+                request={selectedRequest}
+                onClose={() => setSelectedRequestId(null)}
+                onAdminUpdate={handleAdminUpdate}
+                isUpdating={isUpdating}
+                updateError={updateError}
+              />
+            )}
           </div>
         </div>
       </main>
