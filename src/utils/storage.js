@@ -6,6 +6,7 @@ export const STORAGE_KEYS = {
   LATEST_REQUEST: 'latestRequest',
   CUSTOM_SUBMITTED_REQUESTS: 'customSubmittedRequests',
   LATEST_CUSTOM_REQUEST: 'latestCustomRequest',
+  CUSTOM_WIZARD_DRAFT: 'customWizardDraft',
 };
 
 export function saveToStorage(key, value) {

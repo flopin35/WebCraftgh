@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react';
-import { businessTypes, featureOptions, pageOptions } from '../../data/customWebsiteOptions';
+import {
+  budgetOptions,
+  businessTypes,
+  contentReadinessOptions,
+  featureOptions,
+  labelForOption,
+  readinessOptions,
+  timelineOptions,
+  websiteGoalOptions,
+} from '../../data/customWebsiteOptions';
 import { REQUEST_STATUSES } from '../../constants/requestStatuses';
 import { useAdminFileUrls } from '../../hooks/useAdminFileUrls';
 import { formatDateTime } from '../../utils/formatters';
@@ -7,6 +16,10 @@ import './admin.css';
 
 function labelForId(options, id) {
   return options.find((item) => item.id === id)?.label ?? id;
+}
+
+function readinessLabel(value, options) {
+  return labelForId(options, value) || value || '—';
 }
 
 export default function CustomRequestDetailsPanel({
@@ -35,6 +48,10 @@ export default function CustomRequestDetailsPanel({
     );
   }
 
+  const details = request.projectDetails || request.project || {};
+  const lead = request.leadSummary;
+  const isLegacy = Boolean(request.project?.websiteName && !request.websiteGoals?.length);
+
   const handleSave = async () => {
     await onAdminUpdate(request.id, {
       status: selectedStatus,
@@ -60,6 +77,23 @@ export default function CustomRequestDetailsPanel({
         </button>
       </div>
 
+      {lead && (
+        <section className="admin-details__section admin-lead-summary">
+          <h3>Lead Summary</h3>
+          <div className="admin-lead-summary__score">
+            <span className="admin-lead-summary__score-value">{lead.leadScore}</span>
+            <div>
+              <p className="admin-lead-summary__score-label">{lead.leadScoreLabel}</p>
+              <p className="admin-details__muted">Est. value: {lead.estimatedValueLabel}</p>
+            </div>
+          </div>
+          <dl className="admin-details__list">
+            <div><dt>Budget</dt><dd>{lead.budgetLabel}</dd></div>
+            <div><dt>Timeline</dt><dd>{lead.timelineLabel}</dd></div>
+          </dl>
+        </section>
+      )}
+
       <section className="admin-details__section">
         <h3>Customer</h3>
         <dl className="admin-details__list">
@@ -67,29 +101,67 @@ export default function CustomRequestDetailsPanel({
           <div><dt>Phone</dt><dd>{request.customer.phone}</dd></div>
           <div><dt>Email</dt><dd>{request.customer.email}</dd></div>
           <div><dt>Business</dt><dd>{request.customer.businessName}</dd></div>
-          <div><dt>Type</dt><dd>{labelForId(businessTypes, request.customer.businessType)}</dd></div>
+          <div><dt>Type</dt><dd>{labelForOption(businessTypes, request.customer.businessType)}</dd></div>
         </dl>
       </section>
 
-      <section className="admin-details__section">
-        <h3>Project</h3>
-        <dl className="admin-details__list">
-          <div><dt>Website Name</dt><dd>{request.project.websiteName}</dd></div>
-          <div><dt>Purpose</dt><dd>{request.project.websitePurpose}</dd></div>
-        </dl>
-        <p className="admin-details__notes">{request.project.description}</p>
-      </section>
+      {!isLegacy && (
+        <>
+          <section className="admin-details__section">
+            <h3>Website Goals</h3>
+            <p>
+              {(request.websiteGoals || [])
+                .map((id) => labelForOption(websiteGoalOptions, id))
+                .join(', ') || '—'}
+            </p>
+          </section>
 
-      <section className="admin-details__section">
-        <h3>Pages & Features</h3>
-        <p><strong>Pages:</strong> {request.selectedPages.map((id) => labelForId(pageOptions, id)).join(', ')}</p>
-        <p>
-          <strong>Features:</strong>{' '}
-          {request.selectedFeatures.length
-            ? request.selectedFeatures.map((id) => labelForId(featureOptions, id)).join(', ')
-            : 'None selected'}
-        </p>
-      </section>
+          <section className="admin-details__section">
+            <h3>Features</h3>
+            <p>
+              {request.selectedFeatures?.length
+                ? request.selectedFeatures.map((id) => labelForOption(featureOptions, id)).join(', ')
+                : 'None selected'}
+            </p>
+          </section>
+
+          <section className="admin-details__section">
+            <h3>Project Readiness</h3>
+            <dl className="admin-details__list">
+              <div><dt>Logo</dt><dd>{readinessLabel(details.hasLogo, readinessOptions)}</dd></div>
+              <div><dt>Content</dt><dd>{readinessLabel(details.hasContent, contentReadinessOptions)}</dd></div>
+              <div><dt>Domain</dt><dd>{readinessLabel(details.hasDomain, readinessOptions)}</dd></div>
+              <div><dt>Examples</dt><dd>{readinessLabel(details.hasExamples, readinessOptions)}</dd></div>
+            </dl>
+            {details.exampleNotes && <p className="admin-details__notes">{details.exampleNotes}</p>}
+            {details.description && (
+              <>
+                <p className="admin-details__notes-label">Requirements</p>
+                <p className="admin-details__notes">{details.description}</p>
+              </>
+            )}
+          </section>
+
+          <section className="admin-details__section">
+            <h3>Budget & Timeline</h3>
+            <dl className="admin-details__list">
+              <div><dt>Budget</dt><dd>{labelForOption(budgetOptions, request.budget)}</dd></div>
+              <div><dt>Timeline</dt><dd>{labelForOption(timelineOptions, request.timeline)}</dd></div>
+            </dl>
+          </section>
+        </>
+      )}
+
+      {isLegacy && (
+        <section className="admin-details__section">
+          <h3>Project (Legacy)</h3>
+          <dl className="admin-details__list">
+            <div><dt>Website Name</dt><dd>{request.project.websiteName}</dd></div>
+            <div><dt>Purpose</dt><dd>{request.project.websitePurpose}</dd></div>
+          </dl>
+          <p className="admin-details__notes">{request.project.description}</p>
+        </section>
+      )}
 
       {request.uploadedFiles?.length > 0 && (
         <section className="admin-details__section">

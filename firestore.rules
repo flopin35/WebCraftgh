@@ -123,24 +123,31 @@ function isValidCustomWebsiteRequest() {
     && data.customer.businessName.size() <= 120
     && data.customer.businessType is string
     && data.customer.businessType.size() > 0
-    && data.project.websiteName is string
-    && data.project.websiteName.size() > 0
-    && data.project.websiteName.size() <= 120
-    && data.project.websitePurpose is string
-    && data.project.websitePurpose.size() > 0
-    && data.project.websitePurpose.size() <= 200
-    && data.project.description is string
-    && data.project.description.size() > 0
-    && data.project.description.size() <= 5000
-    && data.selectedPages is list
-    && data.selectedPages.size() > 0
-    && data.selectedPages.size() <= 20
+    && data.websiteGoals is list
+    && data.websiteGoals.size() > 0
+    && data.websiteGoals.size() <= 10
     && data.selectedFeatures is list
     && data.selectedFeatures.size() <= 20
+    && data.projectDetails is map
+    && data.projectDetails.description is string
+    && data.projectDetails.description.size() > 0
+    && data.projectDetails.description.size() <= 5000
+    && data.budget is string
+    && data.budget.size() > 0
+    && data.timeline is string
+    && data.timeline.size() > 0
     && data.uploadedFiles is list
     && data.uploadedFiles.size() <= 9
     && data.uploadWarnings is list
-    && data.estimatedPriceRange == 'GHS 2,000+'
+    && data.estimatedPriceRange is string
+    && data.estimatedPriceRange.size() > 0
+    && data.estimatedPriceRange.size() <= 40
+    && data.leadSummary is map
+    && data.leadSummary.leadScore is number
+    && data.leadSummary.leadScore >= 1
+    && data.leadSummary.leadScore <= 100
+    && data.leadSummary.estimatedValue is number
+    && data.leadSummary.estimatedValue >= 0
     && data.adminNotes == ''
     && data.requestProgress == '';
 }
@@ -151,12 +158,15 @@ function isCustomWebsiteRequestAdminUpdateOnly() {
 
   return incoming.receiptId == existing.receiptId
     && incoming.customer == existing.customer
-    && incoming.project == existing.project
-    && incoming.selectedPages == existing.selectedPages
+    && incoming.websiteGoals == existing.websiteGoals
     && incoming.selectedFeatures == existing.selectedFeatures
+    && incoming.projectDetails == existing.projectDetails
+    && incoming.budget == existing.budget
+    && incoming.timeline == existing.timeline
     && incoming.uploadedFiles == existing.uploadedFiles
     && incoming.uploadWarnings == existing.uploadWarnings
     && incoming.estimatedPriceRange == existing.estimatedPriceRange
+    && incoming.leadSummary == existing.leadSummary
     && incoming.createdAt == existing.createdAt
     && incoming.status is string
     && incoming.adminNotes is string

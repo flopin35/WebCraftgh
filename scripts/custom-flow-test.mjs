@@ -63,15 +63,14 @@ async function testLiveHosting() {
 
   if (assetMatch) {
     const css = await (await fetch(`${LIVE_URL}${assetMatch[0]}`)).text();
-    assert(css.includes('custom-upload-card'), 'Deployed CSS includes upload UI styles');
-    assert(css.includes('custom-upload-dropzone'), 'Deployed CSS includes dropzone styles');
+    assert(css.includes('wizard-progress'), 'Deployed CSS includes wizard styles');
   }
 
   const jsMatch = indexHtml.match(/\/assets\/index-[^"]+\.js/);
   if (jsMatch) {
     const js = await (await fetch(`${LIVE_URL}${jsMatch[0]}`)).text();
     assert(js.includes('customWebsiteRequests'), 'Deployed JS includes Firestore collection name');
-    assert(js.includes('Optional Uploads'), 'Deployed JS includes upload section copy');
+    assert(js.includes('wizard-progress'), 'Deployed JS includes wizard UI');
   }
 }
 
@@ -92,18 +91,34 @@ async function testFirestoreSubmission(firebaseConfig) {
       businessName: 'QA Test Business',
       businessType: 'business',
     },
-    project: {
-      websiteName: 'QA Test Site',
-      websitePurpose: 'Automated integration test',
-      description: 'This document was created by scripts/custom-flow-test.mjs and can be ignored.',
+    websiteGoals: ['get-customers'],
+    selectedFeatures: ['blog'],
+    projectDetails: {
+      hasLogo: 'no',
+      hasContent: 'partial',
+      hasDomain: 'no',
+      hasExamples: 'no',
+      exampleNotes: '',
+      description: 'Automated integration test from scripts/custom-flow-test.mjs.',
     },
-    selectedPages: ['home', 'contact'],
-    selectedFeatures: [],
+    budget: '1000-3000',
+    timeline: '1-month',
     uploadedFiles: [],
-    estimatedPriceRange: 'GHS 2,000+',
+    uploadWarnings: [],
+    estimatedPriceRange: 'GHS 1,000 – GHS 3,000',
+    leadSummary: {
+      name: '[AUTOMATED TEST] WebCraft QA',
+      businessName: 'QA Test Business',
+      businessType: 'business',
+      websiteGoals: ['get-customers'],
+      budget: '1000-3000',
+      timeline: '1-month',
+      selectedFeatures: ['blog'],
+      estimatedValue: 2022,
+      leadScore: 42,
+    },
     adminNotes: '',
     requestProgress: '',
-    uploadWarnings: [],
   };
 
   let docId = null;

@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import Navbar from '../../components/Navbar/Navbar';
 import './CustomRequest.css';
 
 export default function CustomRequestHeader() {
@@ -8,8 +7,8 @@ export default function CustomRequestHeader() {
       <p className="custom-request-header__label">Premium Service</p>
       <h1 className="custom-request-header__title">Custom Website Request</h1>
       <p className="custom-request-header__subtitle">
-        Don't see a template that matches your needs? Tell us what you want and we'll create a custom
-        website built specifically for your business or organization.
+        Answer a few simple questions — no technical jargon. Takes about 3 minutes. We'll prepare
+        your quote and call you with next steps.
       </p>
       <Link to="/#custom" className="custom-request-header__back">
         ← Back to templates

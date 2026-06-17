@@ -2,68 +2,120 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes } from 'firebase/storage';
 import {
   ALLOWED_UPLOAD_TYPES,
+  BUDGET_IDS,
   BUSINESS_TYPE_IDS,
-  CUSTOM_ESTIMATED_PRICE,
   CUSTOM_REQUEST_COLLECTION,
   CUSTOM_STORAGE_PATH,
-  featureOptions,
-  pageOptions,
+  FEATURE_IDS,
+  TIMELINE_IDS,
+  WEBSITE_GOAL_IDS,
 } from '../data/customWebsiteOptions';
 import { db, getFirebaseConfigError, isFirebaseConfigured, storage } from '../firebase';
+import { buildLeadSummary, calculateEstimatedPriceRange } from '../utils/customLeadScoring';
 import { generateCustomReceiptId, isValidCustomReceiptId } from '../utils/generateCustomReceipt';
 import { getFriendlyErrorMessage, logError } from '../utils/errors';
 import { sanitizeFormData } from '../utils/inputSanitizer';
 import { isAllowedUploadFile, resolveUploadContentType } from '../utils/uploadValidation';
 import { withTimeout } from '../utils/requestTimeout';
-import { getFromStorage, saveToStorage, STORAGE_KEYS } from '../utils/storage';
+import { getFromStorage, removeFromStorage, saveToStorage, STORAGE_KEYS } from '../utils/storage';
 
 const TIMEOUT_MESSAGE = 'Request timed out. Please try again.';
 const MAX_DESCRIPTION_LENGTH = 5000;
 
 let activeSubmission = false;
 
-const VALID_PAGE_IDS = new Set(pageOptions.map((item) => item.id));
-const VALID_FEATURE_IDS = new Set(featureOptions.map((item) => item.id));
-
-function sanitizeCheckboxSelection(selectedIds, validIds) {
-  return [...new Set(selectedIds)].filter((id) => validIds.has(id));
+function sanitizeSelection(selectedIds, validIds) {
+  return [...new Set(selectedIds)].filter((id) => validIds.includes(id));
 }
 
-function sanitizeCustomFormData(formData) {
+function sanitizeCustomer(formData) {
   const base = sanitizeFormData(formData);
 
   return {
-    ...base,
+    fullName: base.fullName,
+    phone: base.phone,
+    email: base.email,
+    businessName: base.businessName,
     businessType: BUSINESS_TYPE_IDS.includes(formData.businessType) ? formData.businessType : '',
-    websiteName: (formData.websiteName || '').trim().slice(0, 120),
-    websitePurpose: (formData.websitePurpose || '').trim().slice(0, 200),
-    projectDescription: (formData.projectDescription || '').trim().slice(0, MAX_DESCRIPTION_LENGTH),
   };
 }
 
-export function validateCustomRequest({ formData, selectedPages, selectedFeatures }) {
+function sanitizeProjectDetails(projectDetails = {}) {
+  return {
+    hasLogo: projectDetails.hasLogo || '',
+    hasContent: projectDetails.hasContent || '',
+    hasDomain: projectDetails.hasDomain || '',
+    hasExamples: projectDetails.hasExamples || '',
+    exampleNotes: (projectDetails.exampleNotes || '').trim().slice(0, 1000),
+    description: (projectDetails.description || '').trim().slice(0, MAX_DESCRIPTION_LENGTH),
+  };
+}
+
+export function validateWizardStep(wizardState) {
   const errors = [];
-  const data = sanitizeCustomFormData(formData);
+  const { step, formData, websiteGoals, projectDetails, budget, timeline } = wizardState;
+  const customer = sanitizeCustomer(formData);
+  const details = sanitizeProjectDetails(projectDetails);
 
-  if (!data.fullName) errors.push('Full Name is required.');
-  if (!data.phone) errors.push('Phone Number is required.');
-  if (!data.email) errors.push('Email Address is required.');
-  if (!data.businessName) errors.push('Business / Organization Name is required.');
-  if (!data.businessType) errors.push('Business Type is required.');
-  if (!data.websiteName) errors.push('Website Name is required.');
-  if (!data.websitePurpose) errors.push('Website Purpose is required.');
-  if (!data.projectDescription) errors.push('Project description is required.');
-
-  if (selectedPages.length === 0) {
-    errors.push('Select at least one page for your website.');
+  if (step === 1) {
+    if (!customer.fullName) errors.push('Full name is required.');
+    if (!customer.phone) errors.push('Phone number is required.');
+    if (!customer.email) errors.push('Email is required.');
+    if (!customer.businessName) errors.push('Business name is required.');
+    if (!customer.businessType) errors.push('Please select a business type.');
   }
+
+  if (step === 2) {
+    if (!websiteGoals.length) errors.push('Select at least one website goal.');
+  }
+
+  if (step === 4) {
+    if (!details.hasLogo) errors.push('Please answer whether you have a logo.');
+    if (!details.hasContent) errors.push('Please answer whether you have content ready.');
+    if (!details.hasDomain) errors.push('Please answer whether you own a domain.');
+    if (!details.hasExamples) errors.push('Please answer whether you have website examples.');
+    if (!details.description) errors.push('Please describe your business and requirements.');
+  }
+
+  if (step === 5) {
+    if (!BUDGET_IDS.includes(budget)) errors.push('Please select a budget range.');
+    if (!TIMELINE_IDS.includes(timeline)) errors.push('Please select a timeline.');
+  }
+
+  if (step === 6) {
+    const full = validateCustomWizardSubmission(wizardState);
+    if (!full.isValid) errors.push(...full.errors);
+  }
+
+  return { isValid: errors.length === 0, errors };
+}
+
+export function validateCustomWizardSubmission(wizardState) {
+  const errors = [];
+  const customer = sanitizeCustomer(wizardState.formData);
+  const details = sanitizeProjectDetails(wizardState.projectDetails);
+  const websiteGoals = sanitizeSelection(wizardState.websiteGoals, WEBSITE_GOAL_IDS);
+  const selectedFeatures = sanitizeSelection(wizardState.selectedFeatures, FEATURE_IDS);
+
+  if (!customer.fullName) errors.push('Full name is required.');
+  if (!customer.phone) errors.push('Phone number is required.');
+  if (!customer.email) errors.push('Email is required.');
+  if (!customer.businessName) errors.push('Business name is required.');
+  if (!customer.businessType) errors.push('Business type is required.');
+  if (!websiteGoals.length) errors.push('Select at least one website goal.');
+  if (!details.description) errors.push('Project description is required.');
+  if (!BUDGET_IDS.includes(wizardState.budget)) errors.push('Budget is required.');
+  if (!TIMELINE_IDS.includes(wizardState.timeline)) errors.push('Timeline is required.');
 
   return {
     isValid: errors.length === 0,
     errors,
-    sanitizedFormData: data,
-    selectedPages: sanitizeCheckboxSelection(selectedPages, VALID_PAGE_IDS),
-    selectedFeatures: sanitizeCheckboxSelection(selectedFeatures, VALID_FEATURE_IDS),
+    customer,
+    projectDetails: details,
+    websiteGoals,
+    selectedFeatures,
+    budget: wizardState.budget,
+    timeline: wizardState.timeline,
   };
 }
 
@@ -92,6 +144,8 @@ async function uploadCustomFiles(receiptId, uploads) {
 
   for (const { category, files } of uploads) {
     const config = ALLOWED_UPLOAD_TYPES[category];
+    if (!config) continue;
+
     const fileList = files.slice(0, config.maxFiles);
 
     for (const file of fileList) {
@@ -132,41 +186,45 @@ function cacheCustomRequestLocally(request) {
 
   saveToStorage(STORAGE_KEYS.CUSTOM_SUBMITTED_REQUESTS, updated);
   saveToStorage(STORAGE_KEYS.LATEST_CUSTOM_REQUEST, request);
+  removeFromStorage(STORAGE_KEYS.CUSTOM_WIZARD_DRAFT);
 }
 
 export function getLatestCustomRequest() {
   return getFromStorage(STORAGE_KEYS.LATEST_CUSTOM_REQUEST, null);
 }
 
-export async function createCustomWebsiteRequest({ formData, selectedPages, selectedFeatures, uploads }) {
+export async function createCustomWebsiteRequest({
+  formData,
+  websiteGoals,
+  selectedFeatures,
+  projectDetails,
+  budget,
+  timeline,
+  uploads,
+}) {
   if (activeSubmission) {
-    return {
-      success: false,
-      error: 'Your request is already being submitted. Please wait.',
-    };
+    return { success: false, error: 'Your request is already being submitted. Please wait.' };
   }
 
-  const validation = validateCustomRequest({ formData, selectedPages, selectedFeatures });
+  const validation = validateCustomWizardSubmission({
+    formData,
+    websiteGoals,
+    selectedFeatures,
+    projectDetails,
+    budget,
+    timeline,
+  });
 
   if (!validation.isValid) {
-    return {
-      success: false,
-      error: validation.errors.join(' '),
-    };
+    return { success: false, error: validation.errors.join(' ') };
   }
 
   if (!isFirebaseConfigured()) {
-    return {
-      success: false,
-      error: getFirebaseConfigError(),
-    };
+    return { success: false, error: getFirebaseConfigError() };
   }
 
   if (!db) {
-    return {
-      success: false,
-      error: 'Unable to connect to our servers. Please try again shortly.',
-    };
+    return { success: false, error: 'Unable to connect to our servers. Please try again shortly.' };
   }
 
   activeSubmission = true;
@@ -178,18 +236,12 @@ export async function createCustomWebsiteRequest({ formData, selectedPages, sele
   } catch (error) {
     activeSubmission = false;
     logError('CustomReceiptGeneration', error);
-    return {
-      success: false,
-      error: 'Unable to generate receipt. Please try again.',
-    };
+    return { success: false, error: 'Unable to generate receipt. Please try again.' };
   }
 
   if (!isValidCustomReceiptId(receiptId)) {
     activeSubmission = false;
-    return {
-      success: false,
-      error: 'Unable to generate receipt. Please try again.',
-    };
+    return { success: false, error: 'Unable to generate receipt. Please try again.' };
   }
 
   try {
@@ -206,29 +258,33 @@ export async function createCustomWebsiteRequest({ formData, selectedPages, sele
       uploadWarnings = uploadResult.warnings;
     }
 
+    const estimatedPriceRange = calculateEstimatedPriceRange(validation.budget);
+    const leadSummary = buildLeadSummary({
+      customer: validation.customer,
+      websiteGoals: validation.websiteGoals,
+      selectedFeatures: validation.selectedFeatures,
+      projectDetails: validation.projectDetails,
+      budget: validation.budget,
+      timeline: validation.timeline,
+      estimatedPriceRange,
+    });
+
     const payload = {
       receiptId,
       status: 'Pending Review',
       createdAt: serverTimestamp(),
-      customer: {
-        fullName: validation.sanitizedFormData.fullName,
-        phone: validation.sanitizedFormData.phone,
-        email: validation.sanitizedFormData.email,
-        businessName: validation.sanitizedFormData.businessName,
-        businessType: validation.sanitizedFormData.businessType,
-      },
-      project: {
-        websiteName: validation.sanitizedFormData.websiteName,
-        websitePurpose: validation.sanitizedFormData.websitePurpose,
-        description: validation.sanitizedFormData.projectDescription,
-      },
-      selectedPages: validation.selectedPages,
+      customer: validation.customer,
+      websiteGoals: validation.websiteGoals,
       selectedFeatures: validation.selectedFeatures,
+      projectDetails: validation.projectDetails,
+      budget: validation.budget,
+      timeline: validation.timeline,
       uploadedFiles,
-      estimatedPriceRange: CUSTOM_ESTIMATED_PRICE,
+      uploadWarnings,
+      estimatedPriceRange,
+      leadSummary,
       adminNotes: '',
       requestProgress: '',
-      uploadWarnings,
     };
 
     const docRef = await withTimeout(
@@ -242,22 +298,21 @@ export async function createCustomWebsiteRequest({ formData, selectedPages, sele
       dateSubmitted: new Date().toISOString(),
       status: 'Pending Review',
       customer: payload.customer,
-      project: payload.project,
-      selectedPages: payload.selectedPages,
+      websiteGoals: payload.websiteGoals,
       selectedFeatures: payload.selectedFeatures,
+      projectDetails: payload.projectDetails,
+      budget: payload.budget,
+      timeline: payload.timeline,
       uploadedFiles: payload.uploadedFiles,
       uploadWarnings: payload.uploadWarnings,
       estimatedPriceRange: payload.estimatedPriceRange,
+      leadSummary: payload.leadSummary,
       firestoreId: docRef.id,
     };
 
     cacheCustomRequestLocally(cachedRequest);
 
-    return {
-      success: true,
-      request: cachedRequest,
-      warnings: uploadWarnings,
-    };
+    return { success: true, request: cachedRequest, warnings: uploadWarnings };
   } catch (error) {
     logError('CustomWebsiteSubmission', error);
 
@@ -266,10 +321,7 @@ export async function createCustomWebsiteRequest({ formData, selectedPages, sele
         ? 'Unable to submit custom request. Please contact support if this continues.'
         : getFriendlyErrorMessage(error, 'Unable to submit custom request. Please try again.');
 
-    return {
-      success: false,
-      error: message,
-    };
+    return { success: false, error: message };
   } finally {
     activeSubmission = false;
   }

@@ -45,13 +45,19 @@ export default function CustomReceipt() {
                 <dd>{request.receiptId}</dd>
               </div>
               <div className="custom-receipt-card__row">
-                <dt>Website Name</dt>
-                <dd>{request.project.websiteName}</dd>
+                <dt>Business</dt>
+                <dd>{request.customer?.businessName || '—'}</dd>
               </div>
               <div className="custom-receipt-card__row">
                 <dt>Estimated Range</dt>
                 <dd>{request.estimatedPriceRange}</dd>
               </div>
+              {request.leadSummary?.timelineLabel && (
+                <div className="custom-receipt-card__row">
+                  <dt>Timeline</dt>
+                  <dd>{request.leadSummary.timelineLabel}</dd>
+                </div>
+              )}
             </dl>
 
             <div className="custom-receipt-card__message">

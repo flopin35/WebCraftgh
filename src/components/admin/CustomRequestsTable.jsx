@@ -46,8 +46,8 @@ export default function CustomRequestsTable({ requests, selectedId, onSelect, is
             <tr>
               <th>Receipt ID</th>
               <th>Customer</th>
-              <th>Website Name</th>
-              <th>Business Type</th>
+              <th>Business</th>
+              <th>Lead Score</th>
               <th>Est. Range</th>
               <th>Status</th>
               <th>Submitted</th>
@@ -62,8 +62,14 @@ export default function CustomRequestsTable({ requests, selectedId, onSelect, is
               >
                 <td>{request.receiptId}</td>
                 <td>{request.customer.fullName || '—'}</td>
-                <td>{request.project.websiteName || '—'}</td>
-                <td>{request.customer.businessType || '—'}</td>
+                <td>{request.customer.businessName || '—'}</td>
+                <td>
+                  {request.leadSummary?.leadScore != null ? (
+                    <span className="admin-lead-score">{request.leadSummary.leadScore}</span>
+                  ) : (
+                    '—'
+                  )}
+                </td>
                 <td>{request.estimatedPriceRange}</td>
                 <td><StatusBadge status={request.status} /></td>
                 <td>{formatDateTime(request.createdAt)}</td>
