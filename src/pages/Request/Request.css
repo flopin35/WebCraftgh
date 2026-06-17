@@ -8,6 +8,10 @@
   max-width: 1100px;
 }
 
+.request-page__inner--wizard {
+  max-width: 720px;
+}
+
 .request-page__layout {
   display: grid;
   gap: 1.5rem;

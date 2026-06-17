@@ -1,6 +1,7 @@
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { REQUEST_COLLECTION } from '../constants/requestStatuses';
 import { getBundleById } from '../data/upgrades';
+import { getWebsiteTypeById } from '../data/templateCatalog';
 import { db, getFirebaseConfigError, isFirebaseConfigured } from '../firebase';
 import { getFriendlyErrorMessage, logError } from '../utils/errors';
 import { getTemplateById } from '../services/templateService';
@@ -9,6 +10,8 @@ import { sanitizeRequestInput } from '../utils/inputSanitizer';
 import { buildSelectedUpgradesList } from '../utils/pricing';
 import { withTimeout } from '../utils/requestTimeout';
 import { resolveSecureRequestData } from '../utils/securePricing';
+import { buildTemplateLeadSummary } from '../utils/templateLeadScoring';
+import { isCompleteLeadSummary } from '../utils/leadSummary';
 import {
   buildSubmissionFingerprint,
   clearSubmissionLock,
@@ -51,6 +54,36 @@ export function validateRequest({ template, formData }) {
   };
 }
 
+export function validateTemplateWizardStep(state) {
+  const errors = [];
+  const { step, websiteTypeId, packageId, formData } = state;
+
+  if (step >= 1 && !websiteTypeId) {
+    errors.push('Please select a website type.');
+  }
+
+  if (step >= 2) {
+    if (!getWebsiteTypeById(websiteTypeId)) {
+      errors.push('Please select a valid website type.');
+    }
+    if (!packageId || !getTemplateById(packageId)) {
+      errors.push('Please select a package.');
+    }
+  }
+
+  if (step >= 5) {
+    if (!formData.fullName?.trim()) errors.push('Full name is required.');
+    if (!formData.phone?.trim()) errors.push('Phone number is required.');
+    if (!formData.email?.trim()) errors.push('Email is required.');
+    if (!formData.businessName?.trim()) errors.push('Business name is required.');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
 function buildFirestorePayload({
   template,
   formData,
@@ -59,10 +92,12 @@ function buildFirestorePayload({
   includeDeployment,
   pricing,
   receiptId,
+  websiteTypeId,
+  leadSummary,
 }) {
   const selectedBundle = selectedBundleId ? getBundleById(selectedBundleId) : null;
 
-  return {
+  const payload = {
     receiptId,
     status: 'Pending Review',
     createdAt: serverTimestamp(),
@@ -94,7 +129,11 @@ function buildFirestorePayload({
     notes: formData.additionalNotes?.trim() ?? '',
     adminNotes: '',
     requestProgress: '',
+    websiteTypeId: websiteTypeId || '',
+    leadSummary,
   };
+
+  return payload;
 }
 
 function cacheRequestLocally(request) {
@@ -157,6 +196,22 @@ export async function createRequest(rawInput) {
     };
   }
 
+  const leadSummary = buildTemplateLeadSummary({
+    customer: requestInput.formData,
+    websiteTypeId: requestInput.websiteTypeId,
+    template: secureData.template,
+    selectedUpgradeIds: secureData.selectedUpgradeIds,
+    selectedBundleId: secureData.selectedBundleId,
+    pricing: secureData.pricing,
+  });
+
+  if (!isCompleteLeadSummary(leadSummary)) {
+    return {
+      success: false,
+      error: 'Unable to prepare your request. Please check your details and try again.',
+    };
+  }
+
   activeSubmission = true;
   markSubmissionStarted(fingerprint);
 
@@ -191,6 +246,8 @@ export async function createRequest(rawInput) {
     includeDeployment: secureData.includeDeployment,
     pricing: secureData.pricing,
     receiptId,
+    websiteTypeId: requestInput.websiteTypeId,
+    leadSummary,
   });
 
   try {
@@ -206,6 +263,7 @@ export async function createRequest(rawInput) {
       status: 'Pending Review',
       customer: firestorePayload.customer,
       template: firestorePayload.template,
+      websiteTypeId: firestorePayload.websiteTypeId,
       selectedUpgrades: firestorePayload.selectedUpgrades,
       selectedBundle: firestorePayload.selectedBundle,
       selectedFeatures: firestorePayload.selectedFeatures,
@@ -213,6 +271,7 @@ export async function createRequest(rawInput) {
       pricing: firestorePayload.pricing,
       totalPrice: firestorePayload.totalPrice,
       notes: firestorePayload.notes,
+      leadSummary: firestorePayload.leadSummary,
       firestoreId: docRef.id,
     };
 

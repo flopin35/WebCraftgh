@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Hero from '../../components/Hero/Hero';
-import TemplateCard from '../../components/TemplateCard/TemplateCard';
+import WebsiteTypeCard from '../../components/WebsiteTypeCard/WebsiteTypeCard';
 import Footer from '../../components/Footer/Footer';
-import { getTemplates, getCustomWebsite } from '../../services/templateService';
+import { getWebsiteTypes, getCustomWebsite } from '../../services/templateService';
 import './Home.css';
 
 export default function Home() {
-  const templates = getTemplates();
+  const websiteTypes = getWebsiteTypes();
   const customWebsite = getCustomWebsite();
   const location = useLocation();
   const navigate = useNavigate();
@@ -40,17 +40,23 @@ export default function Home() {
         <section id="templates" className="templates section">
           <div className="container">
             <div className="section__header">
-              <h2 className="section__title">Choose Your Template</h2>
+              <h2 className="section__title">What type of website do you need?</h2>
               <p className="section__subtitle">
-                Professional designs ready to launch. Pick a template and we'll customize it for your
-                brand.
+                Pick your category and we&apos;ll show only the packages that fit — no overwhelm, no
+                guesswork.
               </p>
             </div>
 
             <div className="templates__grid">
-              {templates.map((template) => (
-                <TemplateCard key={template.id} {...template} />
+              {websiteTypes.map((type) => (
+                <WebsiteTypeCard key={type.id} {...type} />
               ))}
+            </div>
+
+            <div className="templates__cta">
+              <Link to="/request" className="btn btn--primary btn--lg">
+                Start Your Request
+              </Link>
             </div>
           </div>
         </section>

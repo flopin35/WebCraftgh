@@ -7,6 +7,7 @@ import {
   timelineOptions,
   websiteGoalOptions,
 } from '../data/customWebsiteOptions';
+import { normalizeLeadSummary } from './leadSummary';
 
 const BUDGET_SCORES = {
   'under-1000': 8,
@@ -124,25 +125,25 @@ export function buildLeadSummary({
     timeline,
   });
 
-  return {
+  const websiteGoalLabels = websiteGoals.map((id) => labelForOption(websiteGoalOptions, id));
+  const featureLabels = selectedFeatures.map((id) => labelForOption(featureOptions, id));
+
+  return normalizeLeadSummary({
     name: customer.fullName,
     businessName: customer.businessName,
     businessType: customer.businessType,
     businessTypeLabel: labelForOption(businessTypes, customer.businessType),
-    websiteGoals,
-    websiteGoalLabels: websiteGoals.map((id) => labelForOption(websiteGoalOptions, id)),
-    budget,
-    budgetLabel: labelForOption(budgetOptions, budget),
-    timeline,
-    timelineLabel: labelForOption(timelineOptions, timeline),
+    websiteGoal: websiteGoalLabels.join(', ') || 'Custom website project',
+    budget: labelForOption(budgetOptions, budget),
+    timeline: labelForOption(timelineOptions, timeline),
     selectedFeatures,
-    featureLabels: selectedFeatures.map((id) => labelForOption(featureOptions, id)),
-    estimatedPriceRange: priceRange,
+    featureLabels,
     estimatedValue,
     estimatedValueLabel: `GHS ${estimatedValue.toLocaleString()}`,
     leadScore,
     leadScoreLabel: getLeadScoreLabel(leadScore),
-  };
+    requestType: 'custom',
+  });
 }
 
 export function isValidBudgetId(id) {

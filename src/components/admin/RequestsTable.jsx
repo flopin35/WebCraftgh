@@ -48,6 +48,7 @@ export default function RequestsTable({ requests, selectedId, onSelect, isLoadin
               <th>Customer Name</th>
               <th>Phone Number</th>
               <th>Template</th>
+              <th>Lead Score</th>
               <th>Total Price</th>
               <th>Status</th>
               <th>Date Submitted</th>
@@ -64,6 +65,9 @@ export default function RequestsTable({ requests, selectedId, onSelect, isLoadin
                 <td data-label="Customer">{request.customer.fullName || '—'}</td>
                 <td data-label="Phone">{request.customer.phone || '—'}</td>
                 <td data-label="Template">{request.template.name || '—'}</td>
+                <td data-label="Lead Score">
+                  {request.leadSummary?.leadScore != null ? `${request.leadSummary.leadScore}` : '—'}
+                </td>
                 <td data-label="Total Price">{formatPrice(request.totalPrice)}</td>
                 <td data-label="Status">
                   <StatusBadge status={request.status} />
@@ -90,6 +94,7 @@ export default function RequestsTable({ requests, selectedId, onSelect, isLoadin
             <p>{request.customer.fullName}</p>
             <p>{request.customer.phone}</p>
             <p>{request.template.name}</p>
+            <p>Lead: {request.leadSummary?.leadScore ?? '—'}</p>
             <p>{formatPrice(request.totalPrice)}</p>
             <p className="admin-card__date">{formatDateTime(request.createdAt)}</p>
           </button>

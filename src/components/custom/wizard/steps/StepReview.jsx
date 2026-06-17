@@ -46,7 +46,7 @@ export default function StepReview({ state }) {
       <div className="wizard-review">
         <div className="wizard-review__highlight">
           <p className="wizard-review__estimate-label">Estimated project range</p>
-          <p className="wizard-review__estimate">{leadSummary.estimatedPriceRange}</p>
+          <p className="wizard-review__estimate">{leadSummary.budget}</p>
           <p className="wizard-review__estimate-note">Final price confirmed after we review your needs.</p>
         </div>
 

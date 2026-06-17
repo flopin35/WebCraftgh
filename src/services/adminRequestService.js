@@ -51,6 +51,8 @@ export function mapRequestDocument(docSnap) {
     notes: data.notes ?? '',
     adminNotes: data.adminNotes ?? '',
     requestProgress: data.requestProgress ?? '',
+    websiteTypeId: data.websiteTypeId ?? '',
+    leadSummary: data.leadSummary ?? null,
     createdAt: normalizeTimestamp(data.createdAt),
     updatedAt: normalizeTimestamp(data.updatedAt),
   };

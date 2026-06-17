@@ -50,12 +50,12 @@ export default function CustomReceipt() {
               </div>
               <div className="custom-receipt-card__row">
                 <dt>Estimated Range</dt>
-                <dd>{request.estimatedPriceRange}</dd>
+                <dd>{request.leadSummary?.budget || request.estimatedPriceRange || '—'}</dd>
               </div>
-              {request.leadSummary?.timelineLabel && (
+              {request.leadSummary?.timeline && (
                 <div className="custom-receipt-card__row">
                   <dt>Timeline</dt>
-                  <dd>{request.leadSummary.timelineLabel}</dd>
+                  <dd>{request.leadSummary.timeline}</dd>
                 </div>
               )}
             </dl>

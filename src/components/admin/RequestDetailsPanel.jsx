@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { REQUEST_STATUSES } from '../../constants/requestStatuses';
 import { formatDateTime, formatPrice } from '../../utils/formatters';
+import LeadSummaryDetails from './LeadSummaryDetails';
 import './admin.css';
 
 export default function RequestDetailsPanel({
@@ -97,8 +98,16 @@ export default function RequestDetailsPanel({
             <dt>Business Name</dt>
             <dd>{request.customer.businessName || '—'}</dd>
           </div>
+          {request.websiteTypeId && (
+            <div>
+              <dt>Website Type</dt>
+              <dd>{request.leadSummary?.businessTypeLabel || request.websiteTypeId}</dd>
+            </div>
+          )}
         </dl>
       </section>
+
+      <LeadSummaryDetails leadSummary={request.leadSummary} />
 
       <section className="admin-details__section">
         <h3>Selected Template</h3>

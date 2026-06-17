@@ -31,7 +31,41 @@ function isValidTemplate(template) {
       (template.id == 'business' && template.name == 'Business Website' && template.price == 1200)
       || (template.id == 'store' && template.name == 'Store Website' && template.price == 1500)
       || (template.id == 'political' && template.name == 'Political/Foundation Website' && template.price == 1100)
+      || (template.id == 'business-starter' && template.name == 'Business Starter' && template.price == 1200)
+      || (template.id == 'business-pro' && template.name == 'Business Pro' && template.price == 1800)
+      || (template.id == 'school-starter' && template.name == 'School Basic' && template.price == 1100)
+      || (template.id == 'school-pro' && template.name == 'School Pro' && template.price == 1500)
+      || (template.id == 'foundation-starter' && template.name == 'Foundation Basic' && template.price == 1100)
+      || (template.id == 'foundation-pro' && template.name == 'Foundation Pro' && template.price == 1400)
+      || (template.id == 'church-starter' && template.name == 'Church Basic' && template.price == 1100)
+      || (template.id == 'church-pro' && template.name == 'Church Pro' && template.price == 1400)
+      || (template.id == 'portfolio-starter' && template.name == 'Portfolio Basic' && template.price == 900)
+      || (template.id == 'portfolio-pro' && template.name == 'Portfolio Pro' && template.price == 1200)
+      || (template.id == 'political-starter' && template.name == 'Campaign Basic' && template.price == 1100)
+      || (template.id == 'political-pro' && template.name == 'Campaign Pro' && template.price == 1500)
     );
+}
+
+function isValidLeadSummary(leadSummary) {
+  return leadSummary is map
+    && leadSummary.name is string
+    && leadSummary.name.size() > 0
+    && leadSummary.businessName is string
+    && leadSummary.businessName.size() > 0
+    && leadSummary.businessType is string
+    && leadSummary.businessType.size() > 0
+    && leadSummary.websiteGoal is string
+    && leadSummary.websiteGoal.size() > 0
+    && leadSummary.budget is string
+    && leadSummary.budget.size() > 0
+    && leadSummary.timeline is string
+    && leadSummary.timeline.size() > 0
+    && leadSummary.selectedFeatures is list
+    && leadSummary.estimatedValue is number
+    && leadSummary.estimatedValue >= 0
+    && leadSummary.leadScore is number
+    && leadSummary.leadScore >= 1
+    && leadSummary.leadScore <= 100;
 }
 
 function isValidWebsiteRequest() {
@@ -78,7 +112,11 @@ function isValidWebsiteRequest() {
     && data.notes is string
     && data.notes.size() <= 2000
     && data.adminNotes == ''
-    && data.requestProgress == '';
+    && data.requestProgress == ''
+    && data.websiteTypeId is string
+    && data.websiteTypeId.size() > 0
+    && data.leadSummary is map
+    && isValidLeadSummary(data.leadSummary);
 }
 
 function isWebsiteRequestAdminUpdateOnly() {
@@ -95,6 +133,8 @@ function isWebsiteRequestAdminUpdateOnly() {
     && incoming.deployment == existing.deployment
     && incoming.totalPrice == existing.totalPrice
     && incoming.notes == existing.notes
+    && incoming.leadSummary == existing.leadSummary
+    && incoming.websiteTypeId == existing.websiteTypeId
     && incoming.createdAt == existing.createdAt
     && incoming.status is string
     && incoming.adminNotes is string
@@ -143,11 +183,7 @@ function isValidCustomWebsiteRequest() {
     && data.estimatedPriceRange.size() > 0
     && data.estimatedPriceRange.size() <= 40
     && data.leadSummary is map
-    && data.leadSummary.leadScore is number
-    && data.leadSummary.leadScore >= 1
-    && data.leadSummary.leadScore <= 100
-    && data.leadSummary.estimatedValue is number
-    && data.leadSummary.estimatedValue >= 0
+    && isValidLeadSummary(data.leadSummary)
     && data.adminNotes == ''
     && data.requestProgress == '';
 }

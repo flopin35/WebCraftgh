@@ -1,12 +1,21 @@
-import { templates, customWebsite } from '../data/templates';
+import { getPackageById, templatePackages, websiteTypes } from '../data/templateCatalog';
+import { customWebsite } from '../data/templates';
 import { getFromStorage, removeFromStorage, saveToStorage, STORAGE_KEYS } from '../utils/storage';
 
+export function getWebsiteTypes() {
+  return websiteTypes;
+}
+
+export function getTemplatePackages() {
+  return templatePackages;
+}
+
 export function getTemplates() {
-  return templates;
+  return websiteTypes;
 }
 
 export function getTemplateById(id) {
-  return templates.find((template) => template.id === id) ?? null;
+  return getPackageById(id);
 }
 
 export function getCustomWebsite() {

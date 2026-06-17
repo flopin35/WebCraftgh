@@ -1,0 +1,29 @@
+.website-type-card {
+  background: var(--color-white);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition), transform 0.15s ease;
+}
+
+.website-type-card:hover {
+  border-color: var(--color-blue);
+  transform: translateY(-2px);
+}
+
+.website-type-card__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.website-type-card__description {
+  flex: 1;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}

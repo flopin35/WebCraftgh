@@ -27,6 +27,23 @@
   gap: 1.5rem;
 }
 
+.templates__cta {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .templates__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .templates__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .custom-card {
   background: linear-gradient(135deg, var(--color-text) 0%, #1f2937 100%);
   color: var(--color-white);

@@ -12,6 +12,7 @@ import {
 } from '../data/customWebsiteOptions';
 import { db, getFirebaseConfigError, isFirebaseConfigured, storage } from '../firebase';
 import { buildLeadSummary, calculateEstimatedPriceRange } from '../utils/customLeadScoring';
+import { isCompleteLeadSummary } from '../utils/leadSummary';
 import { generateCustomReceiptId, isValidCustomReceiptId } from '../utils/generateCustomReceipt';
 import { getFriendlyErrorMessage, logError } from '../utils/errors';
 import { sanitizeFormData } from '../utils/inputSanitizer';
@@ -268,6 +269,13 @@ export async function createCustomWebsiteRequest({
       timeline: validation.timeline,
       estimatedPriceRange,
     });
+
+    if (!isCompleteLeadSummary(leadSummary)) {
+      return {
+        success: false,
+        error: 'Unable to prepare your request. Please check your details and try again.',
+      };
+    }
 
     const payload = {
       receiptId,

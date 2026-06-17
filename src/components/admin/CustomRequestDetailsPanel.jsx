@@ -12,6 +12,7 @@ import {
 import { REQUEST_STATUSES } from '../../constants/requestStatuses';
 import { useAdminFileUrls } from '../../hooks/useAdminFileUrls';
 import { formatDateTime } from '../../utils/formatters';
+import LeadSummaryDetails from './LeadSummaryDetails';
 import './admin.css';
 
 function labelForId(options, id) {
@@ -77,22 +78,7 @@ export default function CustomRequestDetailsPanel({
         </button>
       </div>
 
-      {lead && (
-        <section className="admin-details__section admin-lead-summary">
-          <h3>Lead Summary</h3>
-          <div className="admin-lead-summary__score">
-            <span className="admin-lead-summary__score-value">{lead.leadScore}</span>
-            <div>
-              <p className="admin-lead-summary__score-label">{lead.leadScoreLabel}</p>
-              <p className="admin-details__muted">Est. value: {lead.estimatedValueLabel}</p>
-            </div>
-          </div>
-          <dl className="admin-details__list">
-            <div><dt>Budget</dt><dd>{lead.budgetLabel}</dd></div>
-            <div><dt>Timeline</dt><dd>{lead.timelineLabel}</dd></div>
-          </dl>
-        </section>
-      )}
+      <LeadSummaryDetails leadSummary={lead} />
 
       <section className="admin-details__section">
         <h3>Customer</h3>
