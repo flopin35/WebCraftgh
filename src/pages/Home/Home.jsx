@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Hero from '../../components/Hero/Hero';
+import FeaturedProjects from '../../components/portfolio/FeaturedProjects';
 import WebsiteTypeCard from '../../components/WebsiteTypeCard/WebsiteTypeCard';
 import Footer from '../../components/Footer/Footer';
 import { getWebsiteTypes, getCustomWebsite } from '../../services/templateService';
@@ -36,6 +37,8 @@ export default function Home() {
 
       <main>
         <Hero />
+
+        <FeaturedProjects showViewAll />
 
         <section id="templates" className="templates section">
           <div className="container">

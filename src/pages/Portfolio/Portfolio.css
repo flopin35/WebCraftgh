@@ -1,0 +1,30 @@
+.portfolio-page-bottom {
+  background: var(--color-surface);
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.portfolio-page-bottom__inner {
+  text-align: center;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.portfolio-page-bottom__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+
+.portfolio-page-bottom__text {
+  color: var(--color-text-muted);
+  line-height: 1.65;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .portfolio-page-bottom__title {
+    font-size: 1.75rem;
+  }
+}

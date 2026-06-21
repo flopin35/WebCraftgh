@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home/Home';
+import Portfolio from './pages/Portfolio/Portfolio';
 import Request from './pages/Request/Request';
 import CustomRequest from './pages/CustomRequest/CustomRequest';
 import CustomReceipt from './pages/CustomReceipt/CustomReceipt';
@@ -14,6 +15,7 @@ export default function App() {
       <AuthRedirectHandler />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/request" element={<Request />} />
         <Route path="/custom-request" element={<CustomRequest />} />
         <Route path="/custom-receipt" element={<CustomReceipt />} />

@@ -34,6 +34,26 @@ export default function Footer() {
           </a>
         </div>
         <div className="footer__contact">
+          <h3 className="footer__heading">Quick Links</h3>
+          <ul className="footer__links">
+            <li>
+              <Link to="/portfolio" className="footer__link">
+                Portfolio
+              </Link>
+            </li>
+            <li>
+              <Link to="/request" className="footer__link">
+                Get a Website
+              </Link>
+            </li>
+            <li>
+              <Link to="/custom-request" className="footer__link">
+                Custom Website
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <div className="footer__contact">
           <h3 className="footer__heading">Contact Us</h3>
           <ul className="footer__links">
             <li>
