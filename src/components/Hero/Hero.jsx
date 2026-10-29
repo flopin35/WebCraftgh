@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './Hero.css';
 
 export default function Hero() {
@@ -8,11 +9,19 @@ export default function Hero() {
           <p className="hero__badge">Trusted by businesses across Ghana</p>
           <h1 className="hero__headline">Get A Professional Website For Your Business</h1>
           <p className="hero__subheadline">
-            Choose a ready-made template or request a custom website. We build it, you focus on your
-            business.
+            Customize a website to suit your needs and your budget — from GH₵1,000. Pick your pages, colours
+            and features, see a live preview, and get a clear estimate in minutes.
           </p>
-          <a href="#templates" className="btn btn--primary">
-            View Templates
+          <div className="hero__actions">
+            <Link to="/build" className="btn btn--primary btn--lg hero__cta">
+              Build Your Website
+            </Link>
+            <Link to="/custom-estimate" className="btn btn--outline btn--lg">
+              Get a Custom Estimate
+            </Link>
+          </div>
+          <a href="#templates" className="hero__link">
+            Or browse ready-made templates →
           </a>
         </div>
         <div className="hero__visual" aria-hidden="true">
