@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminFilters from '../../components/admin/AdminFilters';
+import BuilderRequestsAdmin from '../../components/admin/builder/BuilderRequestsAdmin';
 import CustomRequestDetailsPanel from '../../components/admin/CustomRequestDetailsPanel';
 import CustomRequestsTable from '../../components/admin/CustomRequestsTable';
 import OverviewCards from '../../components/admin/OverviewCards';
@@ -28,7 +29,7 @@ const initialFilters = {
 };
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState('template');
+  const [activeTab, setActiveTab] = useState('builder');
   const [templateRequests, setTemplateRequests] = useState([]);
   const [customRequests, setCustomRequests] = useState([]);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
@@ -157,6 +158,9 @@ export default function Admin() {
               </p>
             </div>
             <div className="admin-page__actions">
+              <Link to="/admin/pricing" className="btn btn--outline">
+                Price List
+              </Link>
               <Link to="/admin/system-check" className="btn btn--outline">
                 System Check
               </Link>
@@ -170,6 +174,13 @@ export default function Admin() {
           </header>
 
           <div className="admin-tabs">
+            <button
+              type="button"
+              className={`admin-tabs__btn${activeTab === 'builder' ? ' is-active' : ''}`}
+              onClick={() => handleTabChange('builder')}
+            >
+              Website Builder
+            </button>
             <button
               type="button"
               className={`admin-tabs__btn${activeTab === 'template' ? ' is-active' : ''}`}
@@ -192,6 +203,10 @@ export default function Admin() {
             </p>
           )}
 
+          {activeTab === 'builder' ? (
+            <BuilderRequestsAdmin />
+          ) : (
+          <>
           <OverviewCards counts={overviewCounts} isLoading={isLoading} />
           {activeTab === 'template' && <AdminFilters filters={filters} onChange={setFilters} />}
 
@@ -230,6 +245,8 @@ export default function Admin() {
               />
             )}
           </div>
+          </>
+          )}
         </div>
       </main>
     </>

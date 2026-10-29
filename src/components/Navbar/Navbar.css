@@ -111,3 +111,14 @@
     padding: 0.5rem 1rem;
   }
 }
+
+.nav__link--cta {
+  background: var(--color-blue);
+  color: #fff !important;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+}
+
+.nav__link--cta:hover {
+  background: var(--color-blue-dark);
+}

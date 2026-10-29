@@ -48,6 +48,16 @@ export default function Navbar() {
         <nav className={`nav${isOpen ? ' is-open' : ''}`} aria-label="Main navigation">
           <ul className="nav__list">
             <li>
+              <Link to="/build" className="nav__link nav__link--cta" onClick={closeMenu}>
+                Build Your Website
+              </Link>
+            </li>
+            <li>
+              <Link to="/track" className="nav__link" onClick={closeMenu}>
+                Track Request
+              </Link>
+            </li>
+            <li>
               <Link to="/portfolio" className="nav__link" onClick={closeMenu}>
                 Portfolio
               </Link>

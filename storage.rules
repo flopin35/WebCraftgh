@@ -15,5 +15,17 @@ service firebase.storage {
         );
       allow update, delete: if false;
     }
+
+    match /websiteBuilderRequests/{receiptId}/{fileName} {
+      allow read: if request.auth != null
+        && request.auth.token.email == 'daakukwaku7@gmail.com';
+      allow create: if receiptId.matches('^(WB|CE)-[A-Z0-9]{8}$')
+        && request.resource.size <= 10 * 1024 * 1024
+        && (
+          request.resource.contentType.matches('image/(png|jpeg|webp|svg\\+xml)')
+          || request.resource.contentType == 'application/pdf'
+        );
+      allow update, delete: if false;
+    }
   }
 }

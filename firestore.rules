@@ -15,6 +15,62 @@ service cloud.firestore {
       allow update: if isAdmin() && isCustomWebsiteRequestAdminUpdateOnly();
       allow delete: if false;
     }
+
+    // ---- Website builder + custom estimates -------------------------------
+    match /websiteBuilderRequests/{receiptId} {
+      allow create: if isValidBuilderRequest(receiptId);
+      allow read: if isAdmin();
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'adminNotes', 'quote', 'quoteHistory', 'clarifications', 'updatedAt'])
+        && isBuilderStatus(request.resource.data.status)
+        && request.resource.data.adminNotes is string
+        && request.resource.data.adminNotes.size() <= 5000;
+      allow delete: if false;
+    }
+
+    // Public, PII-free status documents: readable by reference number only (no listing).
+    match /builderRequestStatus/{receiptId} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if isBuilderReference(receiptId)
+        && exists(/databases/$(database)/documents/websiteBuilderRequests/$(receiptId))
+        && request.resource.data.keys().hasOnly(['receiptId', 'requestKind', 'status', 'customerMessage', 'quote', 'updatedAt'])
+        && request.resource.data.receiptId == receiptId
+        && request.resource.data.status == 'Pending Review'
+        && request.resource.data.customerMessage == ''
+        && request.resource.data.quote == null;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'customerMessage', 'quote', 'updatedAt'])
+        && isBuilderStatus(request.resource.data.status);
+      allow delete: if false;
+    }
+
+    match /builderCustomerReplies/{replyId} {
+      allow create: if request.resource.data.keys().hasOnly(['receiptId', 'type', 'message', 'createdAt', 'handled'])
+        && request.resource.data.receiptId is string
+        && isBuilderReference(request.resource.data.receiptId)
+        && exists(/databases/$(database)/documents/builderRequestStatus/$(request.resource.data.receiptId))
+        && request.resource.data.type in ['message', 'accept-quote', 'decline-quote']
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 3000
+        && request.resource.data.handled == false
+        && request.resource.data.createdAt == request.time;
+      allow read: if isAdmin();
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['handled']);
+      allow delete: if false;
+    }
+
+    // Editable price list: public read so the builder can calculate estimates; admin write.
+    match /siteConfig/{configId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /priceListHistory/{entryId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
   }
 }
 
@@ -209,4 +265,72 @@ function isCustomWebsiteRequestAdminUpdateOnly() {
     && incoming.adminNotes.size() <= 5000
     && incoming.requestProgress is string
     && incoming.requestProgress.size() <= 5000;
+}
+
+function isBuilderReference(id) {
+  return id is string && id.matches('^(WB|CE)-[A-Z0-9]{8}$');
+}
+
+function isBuilderStatus(status) {
+  return status in [
+    'Pending Review', 'Needs Information', 'Reviewing', 'Quotation Sent', 'Quote Accepted',
+    'Quote Declined', 'In Development', 'Completed', 'Cancelled'
+  ];
+}
+
+function isValidBuilderCustomer(c) {
+  return c is map
+    && c.keys().hasOnly(['fullName', 'businessName', 'email', 'phone', 'contactMethod', 'timeline'])
+    && c.fullName is string && c.fullName.size() > 0 && c.fullName.size() <= 120
+    && c.businessName is string && c.businessName.size() <= 120
+    && c.email is string && c.email.size() <= 120 && c.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$')
+    && c.phone is string && c.phone.size() <= 30
+    && c.contactMethod in ['whatsapp', 'phone', 'email']
+    && c.timeline is string && c.timeline.size() <= 20;
+}
+
+function isValidBuilderRequest(receiptId) {
+  let data = request.resource.data;
+  let common = isBuilderReference(receiptId)
+    && data.receiptId == receiptId
+    && data.requestKind in ['builder', 'custom-estimate']
+    && data.status == 'Pending Review'
+    && data.createdAt == request.time
+    && isValidBuilderCustomer(data.customer)
+    && data.consent is map && data.consent.accepted == true
+    && data.websiteType is string && data.websiteType.size() <= 40
+    && data.budgetAmount is number && data.budgetAmount >= 0 && data.budgetAmount <= 10000
+    && data.budgetTier is string && data.budgetTier.size() <= 80
+    && data.brief is string && data.brief.size() <= 20000
+    && data.uploadedFiles is list && data.uploadedFiles.size() <= 14
+    && data.uploadWarnings is list && data.uploadWarnings.size() <= 20
+    && data.adminNotes == ''
+    && data.quote == null
+    && data.quoteHistory == []
+    && data.clarifications == [];
+
+  return common && (
+    (
+      data.requestKind == 'builder'
+      && receiptId.matches('^WB-.*')
+      && data.keys().hasOnly(['receiptId', 'requestKind', 'status', 'createdAt', 'customer', 'consent', 'websiteType',
+        'budgetAmount', 'budgetTier', 'spec', 'estimate', 'missingContent', 'brief', 'uploadedFiles', 'uploadWarnings',
+        'adminNotes', 'quote', 'quoteHistory', 'clarifications'])
+      && data.budgetAmount >= 1000
+      && data.spec is map
+      && data.estimate is map
+      && data.estimate.amount is number && data.estimate.amount >= 0 && data.estimate.amount <= 1000000
+      && data.missingContent is list && data.missingContent.size() <= 20
+    ) || (
+      data.requestKind == 'custom-estimate'
+      && receiptId.matches('^CE-.*')
+      && data.keys().hasOnly(['receiptId', 'requestKind', 'status', 'createdAt', 'customer', 'consent', 'websiteType',
+        'budgetAmount', 'budgetTier', 'customEstimate', 'brief', 'uploadedFiles', 'uploadWarnings',
+        'adminNotes', 'quote', 'quoteHistory', 'clarifications'])
+      && data.customEstimate is map
+      && data.customEstimate.description is string
+      && data.customEstimate.description.size() >= 20
+      && data.customEstimate.description.size() <= 5000
+    )
+  );
 }
